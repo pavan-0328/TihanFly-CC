@@ -1,383 +1,339 @@
 /**
- * Application Logic
- * Contains ALL non-map functions: formatting, validation, business logic
+ * Main Application Script - app.js
+ * Integrates map, compass, video, flight controls, message console, and weather dashboard
  */
 
+console.log('🚀 TiHANFly GCS Application Starting...');
+
 // ============================================================================
-// UTILITY FUNCTIONS - Helper functions for the application
+// GLOBAL VARIABLES
 // ============================================================================
 
-const Utils = {
-    // Format distance from meters to readable string
-    formatDistance(distanceInMeters) {
-        if (distanceInMeters < 1000) {
-            return `${distanceInMeters.toFixed(0)} m`;
-        }
-        return `${(distanceInMeters / 1000).toFixed(2)} km`;
-    },
+let tmap = null;
+let compass = null;
+let videoStream = null;
+let flightControls = null;
+let messageConsole = null;
+let weatherDashboard = null;
 
-    // Format coordinates to fixed decimal places
-    formatCoordinate(coord, decimals = 6) {
-        return parseFloat(coord).toFixed(decimals);
-    },
+// ============================================================================
+// INITIALIZATION
+// ============================================================================
 
-    // Validate latitude value
-    isValidLatitude(lat) {
-        return !isNaN(lat) && lat >= -90 && lat <= 90;
-    },
+function initializeApplication() {
+    console.log('⚙️ Initializing application components...');
+    
+    // 1. Initialize Map
+    initializeMap();
+    
+    // 2. Initialize Compass
+    initializeCompass();
+    
+    // 3. Initialize Video Stream (if available)
+    initializeVideo();
+    
+    // 4. Wait for all components to load, then integrate
+    setTimeout(() => {
+        integrateComponents();
+    }, 1000);
+}
 
-    // Validate longitude value
-    isValidLongitude(lng) {
-        return !isNaN(lng) && lng >= -180 && lng <= 180;
-    },
+// ============================================================================
+// MAP INITIALIZATION
+// ============================================================================
 
-    // Validate both coordinates
-    validateCoordinates(lat, lng) {
-        return this.isValidLatitude(lat) && this.isValidLongitude(lng);
-    },
-
-    // Parse input to float safely
-    parseCoordinate(value) {
-        const parsed = parseFloat(value);
-        return isNaN(parsed) ? null : parsed;
-    },
-
-    // Show console message with icon
-    logMessage(message, type = 'info') {
-        const icons = {
-            success: '✓',
-            error: '✗',
-            info: 'ℹ',
-            warning: '⚠'
-        };
-        console.log(`${icons[type] || icons.info} ${message}`);
+function initializeMap() {
+    console.log('🗺️ Initializing map...');
+    
+    try {
+        // Default center: Hyderabad, India
+        const defaultLat = 17.4435;
+        const defaultLng = 78.3772;
+        const defaultZoom = 15;
+        
+        // Create TMap instance
+        tmap = new TMap('map', [defaultLat, defaultLng], defaultZoom, false);
+        window.tmap = tmap; // Make globally accessible
+        
+        console.log('✅ Map initialized');
+        
+    } catch (error) {
+        console.error('❌ Error initializing map:', error);
     }
+}
+
+// ============================================================================
+// COMPASS INITIALIZATION
+// ============================================================================
+
+function initializeCompass() {
+    console.log('🧭 Initializing compass...');
+    
+    try {
+        compass = new CompassEnhanced('map');
+        window.compass = compass;
+        
+        // Set initial telemetry data
+        compass.updateTelemetry({
+            latitude: 17.4435,
+            longitude: 78.3772,
+            altitude: 0,
+            speed: 0,
+            distance: 0,
+            satellites: 12
+        });
+        
+        console.log('✅ Compass initialized');
+        
+    } catch (error) {
+        console.error('❌ Error initializing compass:', error);
+    }
+}
+
+// ============================================================================
+// VIDEO STREAM INITIALIZATION
+// ============================================================================
+
+function initializeVideo() {
+    console.log('📹 Initializing video stream...');
+    
+    try {
+        // Video stream initialization (if VideoStream class exists)
+        if (typeof VideoStream !== 'undefined') {
+            videoStream = new VideoStream('videoStream');
+            window.videoStream = videoStream;
+            console.log('✅ Video stream initialized');
+        } else {
+            console.log('ℹ️ VideoStream class not found, skipping video initialization');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error initializing video:', error);
+    }
+}
+
+// ============================================================================
+// COMPONENT INTEGRATION
+// ============================================================================
+
+function integrateComponents() {
+    console.log('🔗 Integrating components...');
+    
+    // Get references to existing components
+    flightControls = window.flightControls;
+    messageConsole = window.minimalConsole || window.MsgConsole;
+    weatherDashboard = window.weatherDashboard;
+    
+    // Integrate Weather Dashboard with Map
+    integrateWeatherDashboard();
+    
+    // Integrate Flight Controls with Message Console
+    integrateFlightControls();
+    
+    // Set up demo data updates
+    startDemoUpdates();
+    
+    console.log('✅ All components integrated');
+    
+    // Show welcome message
+    if (window.MsgConsole) {
+        window.MsgConsole.success('🚁 TiHANFly GCS Ready');
+        window.MsgConsole.info('Click map to load weather data');
+    }
+}
+
+// ============================================================================
+// WEATHER DASHBOARD INTEGRATION
+// ============================================================================
+
+function integrateWeatherDashboard() {
+    console.log('🌤️ Integrating Weather Dashboard with map...');
+    
+    if (!tmap) {
+        console.error('❌ Map not found, cannot integrate weather dashboard');
+        return;
+    }
+    
+    if (!weatherDashboard) {
+        console.error('❌ Weather Dashboard not found');
+        return;
+    }
+    
+    // Enable map clicking
+    tmap.enableClick();
+    console.log('✅ Map click enabled');
+    
+    // Set up click handler for weather
+    tmap.onClick((lat, lng) => {
+        console.log(`🌍 Map clicked: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+        
+        // Fetch weather for this location
+        weatherDashboard.onMapClick(lat, lng);
+        
+        // Log to message console
+        if (window.MsgConsole) {
+            window.MsgConsole.info(`Weather requested: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+        }
+    });
+    
+    console.log('✅ Weather Dashboard integrated with map');
+    console.log('👆 Click anywhere on the map to load weather data');
+}
+
+// ============================================================================
+// FLIGHT CONTROLS INTEGRATION
+// ============================================================================
+
+function integrateFlightControls() {
+    console.log('🎮 Integrating Flight Controls...');
+    
+    if (!flightControls) {
+        console.log('ℹ️ Flight Controls not found, skipping integration');
+        return;
+    }
+    
+    // Set up flight control callbacks
+    flightControls.onTakeoff((settings) => {
+        console.log('🚁 TAKEOFF initiated:', settings);
+        if (window.MsgConsole) {
+            window.MsgConsole.takeoff(settings.altitude);
+        }
+    });
+    
+    flightControls.onLand(() => {
+        console.log('🛬 LAND initiated');
+        if (window.MsgConsole) {
+            window.MsgConsole.land();
+        }
+    });
+    
+    flightControls.onRTL(() => {
+        console.log('🏠 RTL initiated');
+        if (window.MsgConsole) {
+            window.MsgConsole.rtl();
+        }
+    });
+    
+    console.log('✅ Flight Controls integrated');
+}
+
+// ============================================================================
+// DEMO DATA UPDATES
+// ============================================================================
+
+function startDemoUpdates() {
+    console.log('📊 Starting demo data updates...');
+    
+    // Update compass heading every 2 seconds (simulated rotation)
+    let currentHeading = 0;
+    setInterval(() => {
+        if (compass) {
+            currentHeading = (currentHeading + 5) % 360;
+            compass.setHeading(currentHeading);
+        }
+    }, 2000);
+    
+    // Update telemetry data every 5 seconds
+    setInterval(() => {
+        if (compass) {
+            const randomAlt = (Math.random() * 50).toFixed(1);
+            const randomSpeed = (Math.random() * 10).toFixed(1);
+            
+            compass.updateTelemetry({
+                altitude: parseFloat(randomAlt),
+                speed: parseFloat(randomSpeed),
+                satellites: Math.floor(Math.random() * 5) + 10
+            });
+        }
+    }, 5000);
+}
+
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
+/**
+ * Test weather dashboard with default location
+ */
+function testWeather() {
+    if (window.weatherDashboard) {
+        console.log('🧪 Testing weather with Hyderabad location...');
+        window.weatherDashboard.fetchWeather(17.4435, 78.3772);
+    } else {
+        console.error('❌ Weather Dashboard not found');
+    }
+}
+
+/**
+ * Debug all components
+ */
+function debugComponents() {
+    console.log('🔍 Component Debug Information:');
+    console.log('================================');
+    console.log('Map (tmap):', !!tmap);
+    console.log('Compass:', !!compass);
+    console.log('Video Stream:', !!videoStream);
+    console.log('Flight Controls:', !!flightControls);
+    console.log('Message Console:', !!messageConsole);
+    console.log('Weather Dashboard:', !!weatherDashboard);
+    console.log('================================');
+    
+    if (tmap) {
+        console.log('Map click enabled:', tmap.clickEnabled);
+        console.log('Map has click callback:', !!tmap.clickCallback);
+    }
+    
+    if (weatherDashboard) {
+        console.log('Weather visible:', weatherDashboard.isVisible);
+        console.log('Weather loading:', weatherDashboard.isLoading);
+    }
+}
+
+// ============================================================================
+// GLOBAL API
+// ============================================================================
+
+window.GCS = {
+    // Component references
+    map: () => tmap,
+    compass: () => compass,
+    video: () => videoStream,
+    flightControls: () => flightControls,
+    weather: () => weatherDashboard,
+    
+    // Utility functions
+    testWeather: testWeather,
+    debug: debugComponents,
+    
+    // Quick actions
+    showWeather: () => window.Weather?.show(),
+    hideWeather: () => window.Weather?.hide(),
+    toggleWeather: () => window.Weather?.toggle(),
 };
 
 // ============================================================================
-// MAP APPLICATION - Main application logic
+// AUTO-START
 // ============================================================================
 
-class MapApplication {
-    constructor() {
-        this.config = {
-            useOffline: false,
-            defaultCenter: [28.6139, 77.2090],
-            defaultZoom: 13,
-            routeColor: '#FF0000'
-        };
-
-        this.map = null;
-        this.ui = null;
-        this.compass = null;
-        this.currentHeading = 0;
-        this.currentSpeed = 0;
-        this.satellites = 12; // Simulated satellite count
-    }
-
-    initialize() {
-        // Create map instance
-        this.map = new TMap(
-            'map',
-            this.config.defaultCenter,
-            this.config.defaultZoom,
-            this.config.useOffline
-        );
-
-        // Setup map behavior
-        this.setupMapBehavior();
-
-        // Create UI controller
-        this.ui = new UIController(this.map, this);
-
-        // Initialize enhanced compass with telemetry
-        this.compass = new CompassEnhanced('map');
-        
-        // Initialize telemetry with default values
-        this.updateTelemetryDisplay();
-        
-        // Start compass rotation simulation (optional - remove in production)
-        // Uncomment the line below to see the compass rotate automatically
-        // this.compass.startRotation(2);
-        
-        // Listen to map rotation/bearing changes if needed
-        this.setupCompassBehavior();
-        
-        // Update telemetry periodically
-        this.startTelemetryUpdates();
-    }
-
-    setupMapBehavior() {
-        // Handle map clicks to add markers
-        this.map.onClick((lat, lng) => {
-            this.addMarkerWithEvents(lat, lng);
-        });
-    }
-
-    setupCompassBehavior() {
-        // Update compass when map moves
-        this.map.onMoveEnd((lat, lng) => {
-            this.updateCompassHeading();
-            this.updateTelemetryDisplay();
-        });
-    }
-
-    startTelemetryUpdates() {
-        // Update telemetry display every second
-        setInterval(() => {
-            this.updateTelemetryDisplay();
-            // Simulate speed changes (for demo purposes)
-            this.currentSpeed = Math.random() * 5;
-        }, 1000);
-    }
-
-    updateTelemetryDisplay() {
-        const center = this.map.getCenter();
-        const coords = this.map.getMarkerCoordinates();
-        const distance = this.map.calculateDistance(coords);
-        
-        // Update compass telemetry
-        if (this.compass) {
-            this.compass.updateTelemetry({
-                latitude: center.lat,
-                longitude: center.lng,
-                altitude: 0, // Can be set from external data
-                speed: this.currentSpeed,
-                distance: distance,
-                satellites: this.satellites
-            });
-        }
-    }
-
-    updateCompassHeading() {
-        const coords = this.map.getMarkerCoordinates();
-        
-        // Calculate heading from first two markers (if they exist)
-        if (coords.length >= 2) {
-            const heading = this.calculateBearing(
-                coords[0].lat, coords[0].lng,
-                coords[1].lat, coords[1].lng
-            );
-            this.setHeading(heading);
-        }
-    }
-
-    calculateBearing(lat1, lng1, lat2, lng2) {
-        const dLng = (lng2 - lng1) * Math.PI / 180;
-        const lat1Rad = lat1 * Math.PI / 180;
-        const lat2Rad = lat2 * Math.PI / 180;
-        
-        const y = Math.sin(dLng) * Math.cos(lat2Rad);
-        const x = Math.cos(lat1Rad) * Math.sin(lat2Rad) -
-                  Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(dLng);
-        
-        let bearing = Math.atan2(y, x) * 180 / Math.PI;
-        bearing = (bearing + 360) % 360;
-        
-        return bearing;
-    }
-
-    setHeading(degrees) {
-        this.currentHeading = degrees;
-        if (this.compass) {
-            this.compass.setHeading(degrees);
-        }
-        Utils.logMessage(`Heading updated: ${degrees.toFixed(1)}°`, 'info');
-    }
-
-    addMarkerWithEvents(lat, lng) {
-        const marker = this.map.addMarker(lat, lng);
-        
-        // Setup marker drag to update route
-        this.map.onMarkerDrag(marker, () => {
-            this.updateRoute();
-            this.updateCompassHeading();
-            this.updateTelemetryDisplay();
-        });
-
-        // Log when marker drag ends
-        this.map.onMarkerDragEnd(marker, (lat, lng) => {
-            Utils.logMessage(
-                `Marker moved to [${Utils.formatCoordinate(lat)}, ${Utils.formatCoordinate(lng)}]`,
-                'info'
-            );
-            this.updateTelemetryDisplay();
-        });
-
-        // Update route and compass after adding marker
-        this.updateRoute();
-        this.updateCompassHeading();
-        this.updateTelemetryDisplay();
-    }
-
-    updateRoute() {
-        const coords = this.map.getMarkerCoordinates();
-        this.map.drawRoute(coords, { color: this.config.routeColor });
-    }
-
-    getMarkerInfo() {
-        const coords = this.map.getMarkerCoordinates();
-        const count = this.map.getMarkerCount();
-        const distance = this.map.calculateDistance(coords);
-        
-        return {
-            count: count,
-            coordinates: coords,
-            distance: distance,
-            formattedDistance: Utils.formatDistance(distance),
-            heading: this.currentHeading,
-            speed: this.currentSpeed,
-            satellites: this.satellites
-        };
-    }
-
-    clearAll() {
-        this.map.clearMarkers();
-        this.map.clearRoute();
-        if (this.compass) {
-            this.compass.setHeading(0);
-        }
-        this.currentHeading = 0;
-        this.updateTelemetryDisplay();
-    }
-
-    navigateTo(lat, lng) {
-        this.map.setCenter(lat, lng);
-        this.updateTelemetryDisplay();
-    }
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApplication);
+} else {
+    initializeApplication();
 }
 
-// ============================================================================
-// UI CONTROLLER - Handles user interface interactions
-// ============================================================================
+// Export global reference
+window.app = {
+    tmap,
+    compass,
+    videoStream,
+    flightControls,
+    weatherDashboard
+};
 
-class UIController {
-    constructor(map, app) {
-        this.map = map;
-        this.app = app;
-        this.elements = this.getDOMElements();
-        this.attachEventListeners();
-    }
-
-    getDOMElements() {
-        return {
-            addMarkerBtn: document.getElementById('addMarkerBtn'),
-            clearMarkersBtn: document.getElementById('clearMarkersBtn'),
-            getMarkersBtn: document.getElementById('getMarkersBtn'),
-            goToBtn: document.getElementById('goToBtn'),
-            latInput: document.getElementById('lat'),
-            lngInput: document.getElementById('lng')
-        };
-    }
-
-    attachEventListeners() {
-        const { addMarkerBtn, clearMarkersBtn, getMarkersBtn, goToBtn, latInput, lngInput } = this.elements;
-
-        if (addMarkerBtn) {
-            addMarkerBtn.addEventListener('click', () => this.handleAddMarker());
-        }
-
-        if (clearMarkersBtn) {
-            clearMarkersBtn.addEventListener('click', () => this.handleClearMarkers());
-        }
-
-        if (getMarkersBtn) {
-            getMarkersBtn.addEventListener('click', () => this.handleGetInfo());
-        }
-
-        if (goToBtn) {
-            goToBtn.addEventListener('click', () => this.handleNavigate());
-        }
-
-        // Enable Enter key for navigation
-        if (latInput && lngInput) {
-            [latInput, lngInput].forEach(input => {
-                input.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') this.handleNavigate();
-                });
-            });
-        }
-    }
-
-    handleAddMarker() {
-        const center = this.map.getCenter();
-        this.app.addMarkerWithEvents(center.lat, center.lng);
-        
-        Utils.logMessage(
-            `Marker added at [${Utils.formatCoordinate(center.lat)}, ${Utils.formatCoordinate(center.lng)}]`,
-            'success'
-        );
-    }
-
-    handleClearMarkers() {
-        this.app.clearAll();
-        Utils.logMessage('All markers cleared', 'success');
-    }
-
-    handleGetInfo() {
-        const info = this.app.getMarkerInfo();
-        
-        if (info.count === 0) {
-            Utils.logMessage('No markers on map', 'info');
-            return;
-        }
-
-        // Log detailed information
-        console.log('═══════════════════════════════════════');
-        console.log('WAYPOINT INFORMATION');
-        console.log('═══════════════════════════════════════');
-        console.log(`Total Markers: ${info.count}`);
-        console.log(`Route Distance: ${info.formattedDistance}`);
-        console.log(`Current Heading: ${info.heading.toFixed(1)}°`);
-        console.log(`Current Speed: ${info.speed.toFixed(1)} m/s`);
-        console.log(`Satellites: ${info.satellites}`);
-        console.log('───────────────────────────────────────');
-        console.log('Coordinates:');
-        info.coordinates.forEach((coord, index) => {
-            console.log(`  ${index + 1}. [${Utils.formatCoordinate(coord.lat)}, ${Utils.formatCoordinate(coord.lng)}]`);
-        });
-        console.log('═══════════════════════════════════════');
-        
-        Utils.logMessage(
-            `${info.count} markers | Distance: ${info.formattedDistance} | Heading: ${info.heading.toFixed(1)}°`,
-            'success'
-        );
-    }
-
-    handleNavigate() {
-        const { latInput, lngInput } = this.elements;
-        
-        const lat = Utils.parseCoordinate(latInput.value);
-        const lng = Utils.parseCoordinate(lngInput.value);
-
-        if (lat === null || lng === null) {
-            this.showError('Please enter numeric values for coordinates');
-            return;
-        }
-
-        if (!Utils.validateCoordinates(lat, lng)) {
-            this.showError('Invalid coordinates! Lat: -90 to 90, Lng: -180 to 180');
-            return;
-        }
-
-        this.app.navigateTo(lat, lng);
-        Utils.logMessage(
-            `Navigated to [${Utils.formatCoordinate(lat)}, ${Utils.formatCoordinate(lng)}]`,
-            'success'
-        );
-    }
-
-    showError(message) {
-        Utils.logMessage(message, 'error');
-        alert(message);
-    }
-}
-
-// ============================================================================
-// INITIALIZE APPLICATION
-// ============================================================================
-
-document.addEventListener('DOMContentLoaded', () => {
-    const app = new MapApplication();
-    app.initialize();
-});
+console.log('✅ Application script loaded');
+console.log('Available commands:');
+console.log('  - GCS.testWeather() - Test weather with default location');
+console.log('  - GCS.debug() - Show component status');
+console.log('  - GCS.showWeather() - Show weather dashboard');
+console.log('  - GCS.hideWeather() - Hide weather dashboard');
