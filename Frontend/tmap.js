@@ -5,9 +5,11 @@
 
 class TMap {
     constructor(containerId, centerCoords, zoomLevel, useOffline = false) {
-        // Initialize Leaflet map with minZoom to prevent zooming out too far
+        // Initialize Leaflet map with minZoom and maxBounds to prevent zooming/panning too far
         this.map = L.map(containerId, {
-            minZoom: 2  // Won't zoom out beyond this level (can still zoom in freely)
+            minZoom: 2,  // Won't zoom out beyond this level
+            maxBounds: [[-90, -180], [90, 180]],  // Prevent panning beyond world boundaries
+            maxBoundsViscosity: 1.0  // Makes bounds "solid" - can't drag beyond
         }).setView(centerCoords, zoomLevel);
         
         // Initialize layers
@@ -16,6 +18,10 @@ class TMap {
         
         // Store markers
         this.markers = [];
+        
+        // Click handler control
+        this.clickEnabled = false;
+        this.clickCallback = null;
         
         // Load tiles
         this.loadTiles(useOffline);
@@ -56,8 +62,13 @@ class TMap {
     // MARKER OPERATIONS - Add, remove, get markers
     // ========================================================================
     
-    addMarker(lat, lng, draggable = true) {
-        const marker = L.marker([lat, lng], { draggable })
+    addMarker(lat, lng, draggable = true, options = {}) {
+        const markerOptions = { 
+            draggable,
+            ...options
+        };
+        
+        const marker = L.marker([lat, lng], markerOptions)
             .addTo(this.markerLayer);
 
         this.markers.push(marker);
@@ -69,6 +80,20 @@ class TMap {
         if (index > -1) {
             this.markerLayer.removeLayer(marker);
             this.markers.splice(index, 1);
+        }
+    }
+
+    removeLastMarker() {
+        if (this.markers.length > 0) {
+            const lastMarker = this.markers[this.markers.length - 1];
+            this.removeMarker(lastMarker);
+        }
+    }
+
+    removeMarkerAt(index) {
+        if (index >= 0 && index < this.markers.length) {
+            const marker = this.markers[index];
+            this.removeMarker(marker);
         }
     }
 
@@ -171,7 +196,30 @@ class TMap {
     // ========================================================================
     
     onClick(callback) {
+        this.clickCallback = callback;
         this.map.on('click', (e) => {
+            if (this.clickEnabled && this.clickCallback) {
+                this.clickCallback(e.latlng.lat, e.latlng.lng, e);
+            }
+        });
+    }
+
+    enableClick() {
+        this.clickEnabled = true;
+    }
+
+    disableClick() {
+        this.clickEnabled = false;
+    }
+
+    removeClickHandler() {
+        this.clickEnabled = false;
+        this.clickCallback = null;
+        this.map.off('click');
+    }
+
+    onRightClick(callback) {
+        this.map.on('contextmenu', (e) => {
             callback(e.latlng.lat, e.latlng.lng, e);
         });
     }
@@ -191,7 +239,16 @@ class TMap {
     }
 
     onMarkerClick(marker, callback) {
-        marker.on('click', () => {
+        marker.on('click', (e) => {
+            e.originalEvent.stopPropagation(); // Prevent map click event
+            const pos = marker.getLatLng();
+            callback(pos.lat, pos.lng, marker);
+        });
+    }
+
+    onMarkerRightClick(marker, callback) {
+        marker.on('contextmenu', (e) => {
+            e.originalEvent.stopPropagation(); // Prevent map click event
             const pos = marker.getLatLng();
             callback(pos.lat, pos.lng, marker);
         });
@@ -208,5 +265,32 @@ class TMap {
             const center = this.getCenter();
             callback(center.lat, center.lng);
         });
+    }
+
+    // ========================================================================
+    // UTILITY METHODS - Helper functions for common patterns
+    // ========================================================================
+    
+    /**
+     * Enable click-to-remove functionality for markers
+     * When a marker is clicked, it will be removed from the map
+     */
+    enableMarkerRemovalOnClick() {
+        this.markers.forEach(marker => {
+            this.onMarkerClick(marker, (lat, lng, m) => {
+                this.removeMarker(m);
+            });
+        });
+    }
+
+    /**
+     * Add a marker that can be removed by clicking on it
+     */
+    addRemovableMarker(lat, lng, draggable = true, options = {}) {
+        const marker = this.addMarker(lat, lng, draggable, options);
+        this.onMarkerClick(marker, (lat, lng, m) => {
+            this.removeMarker(m);
+        });
+        return marker;
     }
 }
