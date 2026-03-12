@@ -1,37 +1,38 @@
 /**
  * Flight Control Buttons Handler with Takeoff Modal
+ * Frontend Only (Backend/WebSocket removed)
  */
 
 class FlightControlButtons {
     constructor() {
-        this.takeoffBtn = null;
-        this.landBtn = null;
-        this.rtlBtn = null;
-        this.modal = null;
+        this.takeoffBtn      = null;
+        this.landBtn         = null;
+        this.rtlBtn          = null;
+        this.modal           = null;
         this.progressSection = null;
-        
-        this.isExecuting = false;
+
+        this.isExecuting    = false;
         this.currentCommand = null;
-        
+
         this.takeoffSettings = {
             altitude: 10,
             speed: 2
         };
-        
+
         this.callbacks = {
             onTakeoff: null,
             onLand: null,
             onRTL: null
         };
-        
+
         this.initialize();
     }
 
     initialize() {
-        this.takeoffBtn = document.getElementById('takeoffBtn');
-        this.landBtn = document.getElementById('landBtn');
-        this.rtlBtn = document.getElementById('rtlBtn');
-        this.modal = document.getElementById('takeoffModal');
+        this.takeoffBtn      = document.getElementById('takeoffBtn');
+        this.landBtn         = document.getElementById('landBtn');
+        this.rtlBtn          = document.getElementById('rtlBtn');
+        this.modal           = document.getElementById('takeoffModal');
         this.progressSection = document.getElementById('progressSection');
 
         if (!this.takeoffBtn || !this.landBtn || !this.rtlBtn) {
@@ -46,152 +47,101 @@ class FlightControlButtons {
 
         this.attachEventListeners();
         this.attachModalListeners();
-        
         console.log('✅ Flight Control Buttons initialized');
     }
 
     attachEventListeners() {
         this.takeoffBtn.addEventListener('click', () => {
-            console.log('🚁 Takeoff button clicked');
-            if (!this.isExecuting) {
-                this.showTakeoffModal();
-            }
+            if (!this.isExecuting) this.showTakeoffModal();
         });
 
         this.landBtn.addEventListener('click', () => {
-            console.log('🛬 Land button clicked');
-            if (!this.isExecuting) {
-                this.executeLand();
-            }
+            if (!this.isExecuting) this.executeLand();
         });
 
         this.rtlBtn.addEventListener('click', () => {
-            console.log('🏠 RTL button clicked');
-            if (!this.isExecuting) {
-                this.executeRTL();
-            }
+            if (!this.isExecuting) this.executeRTL();
         });
     }
 
     attachModalListeners() {
-        const closeBtn = document.getElementById('modalCloseBtn');
-        const cancelBtn = document.getElementById('modalCancelBtn');
-        const confirmBtn = document.getElementById('modalConfirmBtn');
+        const closeBtn       = document.getElementById('modalCloseBtn');
+        const cancelBtn      = document.getElementById('modalCancelBtn');
+        const confirmBtn     = document.getElementById('modalConfirmBtn');
         const altitudeSlider = document.getElementById('altitudeSlider');
-        const speedSlider = document.getElementById('speedSlider');
-        const altitudeValue = document.getElementById('altitudeValue');
-        const speedValue = document.getElementById('speedValue');
-        
+        const speedSlider    = document.getElementById('speedSlider');
+        const altitudeValue  = document.getElementById('altitudeValue');
+        const speedValue     = document.getElementById('speedValue');
+
         if (!closeBtn || !cancelBtn || !confirmBtn) {
             console.error('❌ Modal buttons not found');
             return;
         }
-        
-        closeBtn.addEventListener('click', () => {
-            console.log('Modal close button clicked');
-            this.hideTakeoffModal();
-        });
-        
-        cancelBtn.addEventListener('click', () => {
-            console.log('Modal cancel button clicked');
-            this.hideTakeoffModal();
-        });
-        
-        confirmBtn.addEventListener('click', () => {
-            console.log('Modal confirm button clicked');
-            this.confirmTakeoff();
-        });
-        
+
+        closeBtn.addEventListener('click',   () => this.hideTakeoffModal());
+        cancelBtn.addEventListener('click',  () => this.hideTakeoffModal());
+        confirmBtn.addEventListener('click', () => this.confirmTakeoff());
+
         this.modal.addEventListener('click', (e) => {
-            if (e.target === this.modal) {
-                console.log('Modal backdrop clicked');
-                this.hideTakeoffModal();
-            }
+            if (e.target === this.modal) this.hideTakeoffModal();
         });
-        
-        // Altitude slider listener
+
         if (altitudeSlider) {
             altitudeSlider.addEventListener('input', (e) => {
                 this.takeoffSettings.altitude = parseFloat(e.target.value);
-                if (altitudeValue) {
-                    altitudeValue.textContent = `${this.takeoffSettings.altitude} m`;
-                }
-                console.log('Altitude set to:', this.takeoffSettings.altitude);
+                if (altitudeValue) altitudeValue.textContent = `${this.takeoffSettings.altitude} m`;
             });
         }
-        
-        // Speed slider listener
+
         if (speedSlider) {
             speedSlider.addEventListener('input', (e) => {
                 this.takeoffSettings.speed = parseFloat(e.target.value);
-                if (speedValue) {
-                    speedValue.textContent = `${this.takeoffSettings.speed.toFixed(1)} m/s`;
-                }
-                console.log('Speed set to:', this.takeoffSettings.speed);
+                if (speedValue) speedValue.textContent = `${this.takeoffSettings.speed.toFixed(1)} m/s`;
             });
         }
     }
 
     showTakeoffModal() {
-        console.log('📋 Opening takeoff modal');
         this.modal.classList.add('active');
         this.progressSection.classList.remove('active');
         document.getElementById('modalActions').style.display = 'flex';
-        
-        // Set slider values
+
         const altitudeSlider = document.getElementById('altitudeSlider');
-        const speedSlider = document.getElementById('speedSlider');
-        const altitudeValue = document.getElementById('altitudeValue');
-        const speedValue = document.getElementById('speedValue');
-        
+        const speedSlider    = document.getElementById('speedSlider');
+        const altitudeValue  = document.getElementById('altitudeValue');
+        const speedValue     = document.getElementById('speedValue');
+
         if (altitudeSlider) {
             altitudeSlider.value = this.takeoffSettings.altitude;
-            if (altitudeValue) {
-                altitudeValue.textContent = `${this.takeoffSettings.altitude} m`;
-            }
+            if (altitudeValue) altitudeValue.textContent = `${this.takeoffSettings.altitude} m`;
         }
-        
+
         if (speedSlider) {
             speedSlider.value = this.takeoffSettings.speed;
-            if (speedValue) {
-                speedValue.textContent = `${this.takeoffSettings.speed.toFixed(1)} m/s`;
-            }
+            if (speedValue) speedValue.textContent = `${this.takeoffSettings.speed.toFixed(1)} m/s`;
         }
     }
 
     hideTakeoffModal() {
-        if (!this.isExecuting) {
-            console.log('📋 Closing takeoff modal');
-            this.modal.classList.remove('active');
-        } else {
-            console.log('⚠️ Cannot close modal during execution');
-        }
+        if (!this.isExecuting) this.modal.classList.remove('active');
     }
 
     confirmTakeoff() {
-        console.log('🚁 TAKEOFF command initiated');
-        console.log(`  Altitude: ${this.takeoffSettings.altitude}m`);
-        console.log(`  Speed: ${this.takeoffSettings.speed}m/s`);
-        
         document.getElementById('modalActions').style.display = 'none';
         this.progressSection.classList.add('active');
-        
         this.setExecutingState(this.takeoffBtn, 'TAKEOFF');
         this.simulateTakeoffProgress();
-        
-        if (this.callbacks.onTakeoff) {
-            this.callbacks.onTakeoff(this.takeoffSettings);
-        }
+        if (this.callbacks.onTakeoff) this.callbacks.onTakeoff(this.takeoffSettings);
     }
 
     simulateTakeoffProgress() {
-        const progressFill = document.getElementById('progressBarFill');
+        const progressFill       = document.getElementById('progressBarFill');
         const progressPercentage = document.getElementById('progressPercentage');
-        const progressStatus = document.getElementById('progressStatus');
-        
-        const duration = (this.takeoffSettings.altitude / this.takeoffSettings.speed) * 1000;
+        const progressStatus     = document.getElementById('progressStatus');
+
+        const duration  = (this.takeoffSettings.altitude / this.takeoffSettings.speed) * 1000;
         const startTime = Date.now();
-        
+
         const statusMessages = [
             'Initiating takeoff sequence...',
             'Motors armed - lifting off...',
@@ -200,36 +150,32 @@ class FlightControlButtons {
             'Stabilizing at target altitude...',
             'Takeoff complete!'
         ];
-        
+
         const updateProgress = () => {
-            const elapsed = Date.now() - startTime;
+            const elapsed  = Date.now() - startTime;
             const progress = Math.min((elapsed / duration) * 100, 100);
-            
-            progressFill.style.width = progress + '%';
+
+            progressFill.style.width       = progress + '%';
             progressPercentage.textContent = Math.round(progress) + '%';
-            
-            const statusIndex = Math.min(
+
+            const idx = Math.min(
                 Math.floor((progress / 100) * statusMessages.length),
                 statusMessages.length - 1
             );
-            progressStatus.textContent = statusMessages[statusIndex];
-            
+            progressStatus.textContent = statusMessages[idx];
+
             if (progress < 100) {
                 requestAnimationFrame(updateProgress);
             } else {
-                setTimeout(() => {
-                    this.completeTakeoff();
-                }, 1000);
+                setTimeout(() => this.completeTakeoff(), 1000);
             }
         };
-        
+
         updateProgress();
     }
 
     completeTakeoff() {
-        console.log('✅ TAKEOFF completed successfully');
         this.clearExecutingState();
-        
         setTimeout(() => {
             this.hideTakeoffModal();
             this.resetProgressBar();
@@ -237,133 +183,187 @@ class FlightControlButtons {
     }
 
     resetProgressBar() {
-        document.getElementById('progressBarFill').style.width = '0%';
+        document.getElementById('progressBarFill').style.width    = '0%';
         document.getElementById('progressPercentage').textContent = '0%';
-        document.getElementById('progressStatus').textContent = 'Initiating takeoff...';
+        document.getElementById('progressStatus').textContent     = 'Initiating takeoff...';
     }
 
     executeLand() {
-        console.log('🛬 LAND command initiated');
         this.setExecutingState(this.landBtn, 'LAND');
-        
-        if (this.callbacks.onLand) {
-            this.callbacks.onLand();
-        } else {
-            this.simulateCommand('LAND');
-        }
+        if (this.callbacks.onLand) this.callbacks.onLand();
+        setTimeout(() => this.clearExecutingState(), 3000);
     }
 
     executeRTL() {
-        console.log('🏠 RTL command initiated');
         this.setExecutingState(this.rtlBtn, 'RTL');
-        
-        if (this.callbacks.onRTL) {
-            this.callbacks.onRTL();
-        } else {
-            this.simulateCommand('RTL');
-        }
+        if (this.callbacks.onRTL) this.callbacks.onRTL();
+        setTimeout(() => this.clearExecutingState(), 3000);
     }
 
     setExecutingState(button, command) {
-        this.isExecuting = true;
+        this.isExecuting    = true;
         this.currentCommand = command;
         button.classList.add('executing');
         this.disableAllButtons();
-        console.log(`⏳ Executing ${command}...`);
     }
 
     clearExecutingState() {
-        this.isExecuting = false;
+        this.isExecuting    = false;
         this.currentCommand = null;
-        
         this.takeoffBtn.classList.remove('executing');
         this.landBtn.classList.remove('executing');
         this.rtlBtn.classList.remove('executing');
-        
         this.enableAllButtons();
-        console.log('✅ Command execution completed');
     }
 
     disableAllButtons() {
         this.takeoffBtn.disabled = true;
-        this.landBtn.disabled = true;
-        this.rtlBtn.disabled = true;
+        this.landBtn.disabled    = true;
+        this.rtlBtn.disabled     = true;
     }
 
     enableAllButtons() {
         this.takeoffBtn.disabled = false;
-        this.landBtn.disabled = false;
-        this.rtlBtn.disabled = false;
+        this.landBtn.disabled    = false;
+        this.rtlBtn.disabled     = false;
     }
 
-    onTakeoff(callback) {
-        this.callbacks.onTakeoff = callback;
-        console.log('✅ Takeoff callback registered');
-    }
-
-    onLand(callback) {
-        this.callbacks.onLand = callback;
-        console.log('✅ Land callback registered');
-    }
-
-    onRTL(callback) {
-        this.callbacks.onRTL = callback;
-        console.log('✅ RTL callback registered');
-    }
-
-    simulateCommand(command) {
-        console.log(`🧪 Simulating ${command} command...`);
-        
-        setTimeout(() => {
-            console.log(`✅ ${command} simulation completed`);
-            this.clearExecutingState();
-        }, 3000);
-    }
+    onTakeoff(callback) { this.callbacks.onTakeoff = callback; }
+    onLand(callback)    { this.callbacks.onLand    = callback; }
+    onRTL(callback)     { this.callbacks.onRTL     = callback; }
 
     completeCommand() {
-        if (this.isExecuting) {
-            console.log(`✅ ${this.currentCommand} command completed`);
-            this.clearExecutingState();
-        }
-    }
-
-    failCommand(errorMessage) {
-        if (this.isExecuting) {
-            console.error(`❌ ${this.currentCommand} command failed: ${errorMessage}`);
-            this.clearExecutingState();
-            alert(`${this.currentCommand} failed: ${errorMessage}`);
-        }
+        if (this.isExecuting) this.clearExecutingState();
     }
 
     show() {
-        const container = document.querySelector('.flight-controls-strip');
-        if (container) {
-            container.style.display = 'flex';
-        }
+        const c = document.querySelector('.flight-controls-strip');
+        if (c) c.style.display = 'flex';
     }
 
     hide() {
-        const container = document.querySelector('.flight-controls-strip');
-        if (container) {
-            container.style.display = 'none';
-        }
+        const c = document.querySelector('.flight-controls-strip');
+        if (c) c.style.display = 'none';
     }
 
-    isCommandExecuting() {
-        return this.isExecuting;
-    }
-
-    getCurrentCommand() {
-        return this.currentCommand;
-    }
-
-    getTakeoffSettings() {
-        return { ...this.takeoffSettings };
-    }
+    isCommandExecuting() { return this.isExecuting; }
+    getCurrentCommand()  { return this.currentCommand; }
+    getTakeoffSettings() { return { ...this.takeoffSettings }; }
 }
 
-// Initialize on DOM load
+/* ============================================================================
+   FLIGHT MODE SELECTOR
+   Opens panel to the RIGHT of the strip so it never covers console messages
+   ============================================================================ */
+
+class FlightModeSelector {
+    constructor() {
+        this.currentMode = 'Stabilize';
+        this.panel       = null;
+        this.btn         = null;
+        this.badge       = null;
+        this.isOpen      = false;
+        this.init();
+    }
+
+    init() {
+        this.btn   = document.getElementById('flightModeBtn');
+        this.panel = document.getElementById('flightModePanel');
+        this.badge = document.getElementById('activeModeDisplay');
+
+        if (!this.btn || !this.panel) {
+            console.error('❌ FlightModeSelector: elements not found');
+            return;
+        }
+
+        // Toggle panel on MODE button click
+        this.btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.isOpen ? this.close() : this.open();
+        });
+
+        // Handle mode selection
+        this.panel.querySelectorAll('.mode-item').forEach(item => {
+            item.addEventListener('click', () => {
+                this.select(item.dataset.mode, item);
+            });
+        });
+
+        // Close when clicking anywhere outside
+        document.addEventListener('click', (e) => {
+            if (!this.btn.contains(e.target) && !this.panel.contains(e.target)) {
+                this.close();
+            }
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') this.close();
+        });
+
+        console.log('✅ FlightModeSelector initialized');
+    }
+
+open() {
+    const rect        = this.btn.getBoundingClientRect();
+    const panelHeight = this.panel.offsetHeight || 380;
+
+    // Place panel to the RIGHT of the strip
+    this.panel.style.left = (rect.right + 8) + 'px';
+
+    // Open UPWARD - bottom of panel aligns with bottom of MODE button
+    let topPos = rect.bottom - panelHeight;
+
+    // Clamp so it doesn't go above the viewport
+    if (topPos < 10) topPos = 10;
+
+    this.panel.style.top = topPos + 'px';
+    this.panel.classList.add('open');
+    this.isOpen = true;
+}
+
+    close() {
+        this.panel.classList.remove('open');
+        this.isOpen = false;
+    }
+
+    select(mode, el) {
+        this.currentMode = mode;
+
+        // Update active highlight on rows
+        this.panel.querySelectorAll('.mode-item').forEach(i => i.classList.remove('active-mode'));
+        el.classList.add('active-mode');
+
+        // Update the badge text
+        if (this.badge) this.badge.textContent = mode.toUpperCase();
+
+        console.log('✈️ Flight Mode changed to:', mode);
+
+        // Fire event so websocket / other modules can react
+        window.dispatchEvent(new CustomEvent('flightModeChanged', {
+            detail: { mode }
+        }));
+
+        // Short delay so user sees highlight before panel closes
+        setTimeout(() => this.close(), 180);
+    }
+
+    setMode(mode) {
+        const item = this.panel.querySelector(`[data-mode="${mode}"]`);
+        if (item) this.select(mode, item);
+    }
+
+    getCurrentMode() { return this.currentMode; }
+}
+
+/* ============================================================================
+   INIT ON DOM READY
+   ============================================================================ */
+
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 Initializing Flight Control Buttons...');
-    window.flightControls = new FlightControlButtons();
+    console.log('🚀 Initializing Flight Controls...');
+    window.flightControls     = new FlightControlButtons();
+    window.flightModeSelector = new FlightModeSelector();
 });
+
+console.log('%c🚁 Flight Control System Ready', 'color: #22c55e; font-size: 14px; font-weight: bold;');
