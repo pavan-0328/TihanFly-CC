@@ -191,10 +191,9 @@ class DropdownMenuStrip {
         setTimeout(() => this.hideAndShowFlightControls(), 100);
     }
 
-    handleAppSettings() {
-        alert('Application Settings\n\nFeature coming soon!');
-        setTimeout(() => this.hideAndShowFlightControls(), 100);
-    }
+handleAppSettings() {
+    SettingsWindow.open();
+}
 
     setActiveButton(button) {
         this.activeButton = button;
@@ -232,6 +231,7 @@ class DropdownMenuStrip {
         this.toggleWithFlightControls();
     }
 }
+
 
 // ============================================================================
 // AUTO-INITIALIZATION
