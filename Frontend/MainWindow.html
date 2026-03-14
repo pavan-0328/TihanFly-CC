@@ -16,17 +16,6 @@
     <link rel="stylesheet" href="dropdown-menu.css">
     <link rel="stylesheet" href="plan-flight.css">
     <link rel="stylesheet" href="command-editor.css">
-    <link rel="stylesheet" href="flight-controls-mode.css">
-    <link rel="stylesheet" href="waypoint-context-menu.css">
-    <link rel="stylesheet" href="settings-window.css">
-<!-- Settings panels: one CSS per panel -->
-<link rel="stylesheet" href="calib-accel.css">
-<link rel="stylesheet" href="calib-compass.css">
-<link rel="stylesheet" href="calib-radio.css">
-<link rel="stylesheet" href="calib-esc.css">
-<link rel="stylesheet" href="param-user.css">
-<link rel="stylesheet" href="param-full.css">
-
 </head>
 <body>
     <!-- Main Container with Grid Layout -->
@@ -105,57 +94,22 @@
         <div id="compassContainer"></div>
 
         <!-- FLIGHT CONTROL BUTTONS STRIP - TOP LEFT CORNER BELOW HEADER -->
-<div class="flight-controls-strip" id="flightControlsStrip">
-
-    <button id="takeoffBtn" class="flight-btn takeoff-btn" title="Takeoff">
-        <img src="resources/takeoff.svg" alt="Takeoff" class="btn-icon">
-        <span class="btn-label">TAKEOFF</span>
-    </button>
-
-    <button id="landBtn" class="flight-btn land-btn" title="Land">
-        <img src="resources/land.svg" alt="Land" class="btn-icon">
-        <span class="btn-label">LAND</span>
-    </button>
-
-    <button id="rtlBtn" class="flight-btn rtl-btn" title="Return to Launch">
-        <img src="resources/rtl.svg" alt="RTL" class="btn-icon">
-        <span class="btn-label">RTL</span>
-    </button>
-
-    <!-- Flight Modes Dropdown -->
-    <div class="flight-mode-dropdown-wrapper">
-        <button id="flightModeBtn" class="flight-btn flight-mode-btn" title="Flight Modes">
-            <svg class="btn-icon mode-svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span class="btn-label">MODE</span>
-        </button>
-
-        <div class="flight-mode-panel" id="flightModePanel">
-            <div class="flight-mode-panel-header">
-                <span>Select Flight Mode</span>
-                <div class="active-mode-badge" id="activeModeDisplay">STABILIZE</div>
-            </div>
-            <div class="flight-mode-list">
-                <button class="mode-item active-mode" data-mode="Stabilize"><span class="mode-dot"></span><span class="mode-name">Stabilize</span><span class="mode-tag basic">BASIC</span></button>
-                <button class="mode-item" data-mode="Acro"><span class="mode-dot"></span><span class="mode-name">Acro</span><span class="mode-tag expert">EXPERT</span></button>
-                <button class="mode-item" data-mode="Altitude Hold"><span class="mode-dot"></span><span class="mode-name">Altitude Hold</span><span class="mode-tag basic">BASIC</span></button>
-                <button class="mode-item" data-mode="Auto"><span class="mode-dot"></span><span class="mode-name">Auto</span><span class="mode-tag auto">AUTO</span></button>
-                <button class="mode-item" data-mode="Guided"><span class="mode-dot"></span><span class="mode-name">Guided</span><span class="mode-tag auto">AUTO</span></button>
-                <button class="mode-item" data-mode="Loiter"><span class="mode-dot"></span><span class="mode-name">Loiter</span><span class="mode-tag gps">GPS</span></button>
-                <button class="mode-item" data-mode="RTL"><span class="mode-dot"></span><span class="mode-name">RTL</span><span class="mode-tag gps">GPS</span></button>
-                <button class="mode-item" data-mode="Circle"><span class="mode-dot"></span><span class="mode-name">Circle</span><span class="mode-tag gps">GPS</span></button>
-                <button class="mode-item" data-mode="Land"><span class="mode-dot"></span><span class="mode-name">Land</span><span class="mode-tag basic">BASIC</span></button>
-                <button class="mode-item" data-mode="Smart RTL"><span class="mode-dot"></span><span class="mode-name">Smart RTL</span><span class="mode-tag gps">GPS</span></button>
-                <button class="mode-item" data-mode="Drift"><span class="mode-dot"></span><span class="mode-name">Drift</span><span class="mode-tag expert">EXPERT</span></button>
-                <button class="mode-item" data-mode="Sport"><span class="mode-dot"></span><span class="mode-name">Sport</span><span class="mode-tag expert">EXPERT</span></button>
-                <button class="mode-item" data-mode="Position"><span class="mode-dot"></span><span class="mode-name">Position</span><span class="mode-tag gps">GPS</span></button>
-                <button class="mode-item" data-mode="Follow Me"><span class="mode-dot"></span><span class="mode-name">Follow Me</span><span class="mode-tag gps">GPS</span></button>
-            </div>
+        <div class="flight-controls-strip" id="flightControlsStrip">
+            <button id="takeoffBtn" class="flight-btn takeoff-btn" title="Takeoff">
+                <img src="resources/takeoff.svg" alt="Takeoff" class="btn-icon">
+                <span class="btn-label">TAKEOFF</span>
+            </button>
+            
+            <button id="landBtn" class="flight-btn land-btn" title="Land">
+                <img src="resources/land.svg" alt="Land" class="btn-icon">
+                <span class="btn-label">LAND</span>
+            </button>
+            
+            <button id="rtlBtn" class="flight-btn rtl-btn" title="Return to Launch">
+                <img src="resources/rtl.svg" alt="RTL" class="btn-icon">
+                <span class="btn-label">RTL</span>
+            </button>
         </div>
-    </div>
-
-</div>
 
         <!-- DROPDOWN MENU STRIP - TOP LEFT BELOW FLIGHT CONTROLS -->
         <div class="dropdown-menu-strip" id="dropdownMenuStrip">
@@ -195,7 +149,9 @@
                     <a href="#" data-action="new-mission">New Mission</a>
                     <a href="#" data-action="open-mission">Open Mission</a>
                     <a href="#" data-action="save-mission">Save Mission</a>
-                    <a href="#" data-action="write-to-drone" style="border-top: 2px solid rgba(230, 0, 126, 0.2); margin-top: 4px; padding-top: 12px;">📡 Write to Drone</a>                    
+                    <a href="#" data-action="save-as">Save As</a>
+                    <a href="#" data-action="import-kml">Import KML</a>
+                    <a href="#" data-action="export-kml">Export KML</a>
                 </div>
             </div>
             
@@ -220,36 +176,9 @@
                 </button>
                 <div class="plan-menu-content">
                     <a href="#" data-action="add-waypoint">Add Waypoint</a>
-                    <div class="plan-menu-divider"></div>
-                    <div class="plan-menu-item">
-                   <a href="#" data-action="send-markers">
-                   <span class="menu-icon">📡</span>
-                    Send Markers
-                    </a>
-                    </div>
+                    <a href="#" data-action="insert-waypoint">Insert Waypoint</a>
                     <a href="#" data-action="delete-waypoint">Delete Waypoint</a>
                     <a href="#" data-action="clear-all">Clear All</a>
-                </div>
-            </div>
-            
-            <!-- POLYGON BUTTON -->
-            <div class="plan-menu-dropdown">
-                <button class="plan-menu-btn" title="Polygon">
-                    <img src="resources/polygon.png" alt="Polygon" class="plan-menu-icon">
-                    <span class="plan-menu-label">POLYGON</span>
-                </button>
-                <div class="plan-menu-content">
-                    <a href="#" data-action="draw-polygon">Draw Polygon</a>
-                    <a href="#" data-action="edit-polygon">Edit Polygon</a>
-                    <a href="#" data-action="survey-settings">Survey Settings</a>
-                    <div class="plan-menu-divider"></div>
-        <div class="plan-menu-item">
-            <a href="#" data-action="send-to-drone">
-                <span class="menu-icon">📡</span>
-                Send to Drone
-            </a>
-        </div>
-                    <a href="#" data-action="clear-polygon">Clear Polygon</a>
                 </div>
             </div>
             
@@ -282,289 +211,95 @@
         <!-- ======================================================================== -->
 
         <!-- ========================================================================
-     COMMAND EDITOR PANEL - ADDED HERE (HIDDEN BY DEFAULT)
-     ======================================================================== -->
-<!-- Command Editor Panel - Complete with Fence & Rally -->
-<div id="commandEditorPanel" class="command-editor-panel" style="display: none;">
-    
-    <!-- Editor Header -->
-    <div class="editor-header">
-        <div class="editor-title">
-            <svg class="editor-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M8 3L4 7L8 11M16 13L20 17L16 21M12 3L8 21" stroke="currentColor" stroke-width="2"/>
-            </svg>
-            <span>Command Editor</span>
-        </div>
-    </div>
-    
-    <!-- Editor Tabs -->
-    <div class="editor-tabs">
-        <button class="editor-tab" data-tab="waypoints">Waypoints</button>
-    </div>
-    
-    <!-- Editor Content -->
-    <div class="editor-content">
-        
-   
-        
-        <!-- Waypoints Panel -->
-        <div class="tab-panel" id="waypointsPanel">
-            <div class="waypoint-list-header">
-                <div class="waypoint-count">
-                    <span id="waypointCountDisplay">0 Waypoints</span>
+             COMMAND EDITOR PANEL - ADDED HERE (HIDDEN BY DEFAULT)
+             ======================================================================== -->
+        <div id="commandEditorPanel" class="command-editor-panel" style="display: none;">
+            
+            <!-- Editor Header -->
+            <div class="editor-header">
+                <div class="editor-title">
+                    <svg class="editor-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 3L4 7L8 11M16 13L20 17L16 21M12 3L8 21" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <span>Command Editor</span>
                 </div>
-                <button class="refresh-waypoints-btn" id="refreshWaypointsBtn" title="Refresh Waypoint List">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M21 10C21 10 18.995 7.26822 17.3662 5.63824C15.7373 4.00827 13.4864 3 11 3C6.02944 3 2 7.02944 2 12C2 16.9706 6.02944 21 11 21C15.1031 21 18.5649 18.2543 19.6482 14.5M21 10V4M21 10H15" stroke="currentColor" stroke-width="2"/>
-                    </svg>
-                </button>
             </div>
             
-            <div class="empty-state" id="emptyWaypointState">
-                <div class="empty-icon">📍</div>
-                <p>No waypoints added yet</p>
-                <small>Click "Add Waypoint" to start</small>
+            <!-- Editor Tabs -->
+            <div class="editor-tabs">
+                <button class="editor-tab active" data-tab="mission">Mission</button>
+                <button class="editor-tab" data-tab="fence">Fence</button>
+                <button class="editor-tab" data-tab="rally">Rally</button>
             </div>
             
-            <div class="waypoint-list" id="waypointList" style="display: none;"></div>
-        </div>
-        
-        <!-- Waypoint Details Panel -->
-        <div class="waypoint-details-panel" id="waypointDetailsPanel" style="display: none;">
-            <div class="details-header">
-                <button class="back-to-list-btn" id="backToListBtn">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2"/>
-                    </svg>
-                    Back to List
-                </button>
-            </div>
-            
-            <div class="details-title">
-                <span id="editingWaypointTitle">Waypoint 1</span>
-            </div>
-            
-            <div class="form-group">
-                <label>Waypoint ID</label>
-                <input type="text" class="form-control" id="waypointIdField" readonly>
-            </div>
-            
-            <div class="form-group">
-                <label>Latitude</label>
-                <input type="number" class="form-control" id="waypointLatField" step="0.000001">
-            </div>
-            
-            <div class="form-group">
-                <label>Longitude</label>
-                <input type="number" class="form-control" id="waypointLngField" step="0.000001">
-            </div>
-            
-            <div class="form-group">
-                <label>Altitude (meters)</label>
-                <input type="number" class="form-control" id="waypointAltField" step="0.1">
-            </div>
-            
-            <div class="form-group">
-                <label>Type</label>
-                <select class="form-control" id="waypointTypeField">
-                    <!-- Navigation Commands -->
-                    <option value="waypoint">Waypoint</option>
-                    <option value="spline-waypoint">Spline Waypoint</option>
-                    <option value="loiter">Loiter</option>
-                    <option value="loiter-turns">Loiter (turns)</option>
-                    <option value="loiter-time">Loiter (time)</option>
-                    <option value="loiter-altitude">Loiter (altitude)</option>
-                    
-                    <!-- Launch & Landing -->
-                    <option value="home">Home/Takeoff</option>
-                    <option value="takeoff">Takeoff</option>
-                    <option value="land">Land</option>
-                    <option value="land-start">Land Start</option>
-                    <option value="rtl">Return To Launch</option>
-                    
-                    <!-- Altitude -->
-                    <option value="change-altitude">Change Altitude</option>
-                    
-                    <!-- Control Commands -->
-                    <option value="guided-enable">Guided Enable</option>
-                    <option value="set-flight-mode">Set Flight Mode</option>
-                    <option value="jump-to-item">Jump to Item</option>
-                    <option value="change-speed">Change Speed</option>
-                    <option value="set-launch-location">Set Launch Location</option>
-                    
-                    <!-- Delays & Timing -->
-                    <option value="delay-until">Delay Until</option>
-                    <option value="delay">Delay</option>
-                    <option value="wait-for-distance">Wait for Distance</option>
-                    <option value="wait-for-yaw">Wait for Yaw</option>
-                    
-                    <!-- Relay & Servo -->
-                    <option value="set-relay">Set Relay</option>
-                    <option value="cycle-relay">Cycle Relay</option>
-                    <option value="set-servo">Set Servo</option>
-                    <option value="cycle-servo">Cycle Servo</option>
-                    
-                    <!-- Camera Commands -->
-                    <option value="region-of-interest">Region of Interest</option>
-                    <option value="camera-config">Camera Config</option>
-                    <option value="camera-control">Camera Control</option>
-                    <option value="camera-trigger-distance">Camera Trigger Distance</option>
-                    
-                    <!-- Mount & Gimbal -->
-                    <option value="control-mount">Control Mount</option>
-                    <option value="gimbal-manager-pitchyaw">Gimbal Manager PitchYaw</option>
-                    <option value="gripper-mechanism">Gripper Mechanism</option>
-                    
-                    <!-- Safety & Limits -->
-                    <option value="enable-geofence">Enable Geofence</option>
-                    <option value="trigger-parachute">Trigger Parachute</option>
-                    <option value="inverted-flight">Inverted Flight</option>
-                    <option value="guided-limits">Guided Limits</option>
-                    
-                    <!-- Advanced -->
-                    <option value="autotune-enable">AutoTune Enable</option>
-                </select>
-            </div>
-            
-            <div class="details-actions">
-                <button class="btn-save" id="saveWaypointBtn">Save Changes</button>
-                <button class="btn-delete" id="deleteWaypointBtn">Delete Waypoint</button>
-            </div>
-        </div>
-        
-        <!-- Fence Panel -->
-        <div class="tab-panel" id="fencePanel">
-            <div class="fence-list-section">
-                <div class="waypoint-list-header">
-                    <div class="waypoint-count">
-                        <span id="fenceCountDisplay">0 Fences</span>
+            <!-- Editor Content -->
+            <div class="editor-content">
+                
+                <!-- Mission Panel -->
+                <div class="tab-panel active" id="missionPanel">
+                    <div class="form-group">
+                        <label>All Altitudes</label>
+                        <select class="form-control">
+                            <option>Relative To Launch</option>
+                            <option>Above Mean Sea Level</option>
+                        </select>
                     </div>
-                    <button class="refresh-waypoints-btn" id="refreshFenceBtn" title="Refresh Fence List">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M21 10C21 10 18.995 7.26822 17.3662 5.63824C15.7373 4.00827 13.4864 3 11 3C6.02944 3 2 7.02944 2 12C2 16.9706 6.02944 21 11 21C15.1031 21 18.5649 18.2543 19.6482 14.5M21 10V4M21 10H15" stroke="currentColor" stroke-width="2"/>
-                        </svg>
-                    </button>
-                </div>
-                
-                <div class="empty-state" id="emptyFenceState">
-                    <div class="empty-icon">🚧</div>
-                    <p>No geofences created yet</p>
-                    <small>Use POLYGON menu to draw fences</small>
-                </div>
-                
-                <div class="fence-list" id="fenceList" style="display: none;"></div>
-            </div>
-        </div>
-        
-        <!-- Fence Details Panel -->
-        <div class="fence-details-panel" id="fenceDetailsPanel" style="display: none;">
-            <div class="details-header">
-                <button class="back-to-list-btn" id="backToFenceListBtn">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2"/>
-                    </svg>
-                    Back to List
-                </button>
-            </div>
-            
-            <div class="details-title">
-                <span id="editingFenceTitle">Fence 1</span>
-            </div>
-            
-            <div class="form-group">
-                <label>Fence ID</label>
-                <input type="text" class="form-control" id="fenceIdField" readonly>
-            </div>
-            
-            <div class="form-group">
-                <label>Fence Type</label>
-                <select class="form-control" id="fenceTypeField">
-                    <option value="inclusion">Inclusion</option>
-                    <option value="exclusion">Exclusion</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label>Points</label>
-                <input type="number" class="form-control" id="fencePointCountField" readonly>
-            </div>
-            
-            <div class="details-actions">
-                <button class="btn-save" id="saveFenceBtn">Save Changes</button>
-                <button class="btn-delete" id="deleteFenceBtn">Delete Fence</button>
-            </div>
-        </div>
-        
-        <!-- Rally Panel -->
-        <div class="tab-panel" id="rallyPanel">
-            <div class="rally-list-section">
-                <div class="waypoint-list-header">
-                    <div class="waypoint-count">
-                        <span id="rallyCountDisplay">0 Rally Points</span>
+                    <div class="form-group">
+                        <label>Initial Waypoint Alt.</label>
+                        <input type="number" class="form-control" value="50.0" step="0.1">
                     </div>
-                    <button class="refresh-waypoints-btn" id="refreshRallyBtn" title="Refresh Rally List">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M21 10C21 10 18.995 7.26822 17.3662 5.63824C15.7373 4.00827 13.4864 3 11 3C6.02944 3 2 7.02944 2 12C2 16.9706 6.02944 21 11 21C15.1031 21 18.5649 18.2543 19.6482 14.5M21 10V4M21 10H15" stroke="currentColor" stroke-width="2"/>
-                        </svg>
-                    </button>
+                    <div class="form-group">
+                        <label>Default Speed</label>
+                        <input type="number" class="form-control" value="10.0" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Loiter Radius</label>
+                        <input type="number" class="form-control" value="50.0" step="1">
+                    </div>
+                    <div class="form-group checkbox-group">
+                        <label>
+                            <input type="checkbox" checked>
+                            Auto RTL after mission
+                        </label>
+                    </div>
                 </div>
                 
-                <div class="empty-state" id="emptyRallyState">
-                    <div class="empty-icon">📍</div>
-                    <p>No rally points set</p>
-                    <small>Click map to add rally points</small>
+                <!-- Fence Panel -->
+                <div class="tab-panel" id="fencePanel">
+                    <div class="info-message">
+                        <p>Fence configuration coming soon...</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Fence Type</label>
+                        <select class="form-control">
+                            <option>Inclusion Fence</option>
+                            <option>Exclusion Fence</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Max Altitude</label>
+                        <input type="number" class="form-control" value="100.0" step="1">
+                    </div>
                 </div>
                 
-                <div class="rally-list" id="rallyList" style="display: none;"></div>
+                <!-- Rally Panel -->
+                <div class="tab-panel" id="rallyPanel">
+                    <div class="info-message">
+                        <p>Rally points coming soon...</p>
+                    </div>
+                    <div class="form-group">
+                        <label>Rally Point Alt.</label>
+                        <input type="number" class="form-control" value="50.0" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Rally Land Alt.</label>
+                        <input type="number" class="form-control" value="10.0" step="0.1">
+                    </div>
+                </div>
+                
             </div>
+            
         </div>
-        
-        <!-- Rally Details Panel -->
-        <div class="rally-details-panel" id="rallyDetailsPanel" style="display: none;">
-            <div class="details-header">
-                <button class="back-to-list-btn" id="backToRallyListBtn">
-                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2"/>
-                    </svg>
-                    Back to List
-                </button>
-            </div>
-            
-            <div class="details-title">
-                <span id="editingRallyTitle">Rally Point 1</span>
-            </div>
-            
-            <div class="form-group">
-                <label>Rally Point ID</label>
-                <input type="text" class="form-control" id="rallyIdField" readonly>
-            </div>
-            
-            <div class="form-group">
-                <label>Latitude</label>
-                <input type="number" class="form-control" id="rallyLatField" step="0.000001">
-            </div>
-            
-            <div class="form-group">
-                <label>Longitude</label>
-                <input type="number" class="form-control" id="rallyLngField" step="0.000001">
-            </div>
-            
-            <div class="form-group">
-                <label>Altitude (meters)</label>
-                <input type="number" class="form-control" id="rallyAltField" step="0.1">
-            </div>
-            
-            <div class="details-actions">
-                <button class="btn-save" id="saveRallyBtn">Save Changes</button>
-                <button class="btn-delete" id="deleteRallyBtn">Delete Rally Point</button>
-            </div>
-        </div>
-        
-    </div>
-    
-</div>
-
-<!-- ======================================================================== -->
         <!-- ======================================================================== -->
 
         <!-- MINIMAL MESSAGE CONSOLE - BOTTOM LEFT CORNER, FULLY TRANSPARENT -->
@@ -739,75 +474,28 @@
                 <button class="modal-btn modal-btn-confirm" id="modalConfirmBtn">Confirm Takeoff</button>
             </div>
             
-            <div class="progress-section" id="progressSection">
-                <div class="progress-header">
-                    <span class="progress-title">Takeoff Progress</span>
-                    <span class="progress-percentage" id="progressPercentage">0%</span>
-                </div>
-                <div class="progress-bar-container">
-                    <div class="progress-bar-fill" id="progressBarFill"></div>
-                </div>
-                <div class="progress-status" id="progressStatus">Initiating takeoff...</div>
-            </div>
-        </div>
-    </div>
-
+            
+    
     <!-- ========================================================================
          JavaScript Files - ORDER IS CRITICAL!
          Load command-editor.js BEFORE plan-flight.js
          ======================================================================== -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<!-- 2. CORE MAP (Must be before WaypointManager) -->
-<script src="js/tmap.js"></script>
-
-<!-- 3. UI COMPONENTS (Independent modules) -->
-<script src="compass.js"></script>
-<script src="video-stream.js"></script>
-<script src="flight-controls.js"></script>
-<script src="messaage-console.js"></script>
-<script src="weather-dashboard.js"></script>
-<script src="dropdown-menu.js"></script>
-<script src="data-persistence.js"></script>
-
-<!-- 4. WAYPOINT SYSTEM (Depends on tmap) -->
-<script src="waypoint-manager.js"></script>
-<script src="waypoint-context-menu.js"></script>
-
-<!-- 5. COMMAND EDITOR (Depends on WaypointManager) -->
-<script src="command-editor.js"></script>
-
-<!-- 6. MISSION FILE MANAGER (Depends on WaypointManager) -->
-<script src="plan-flight-modules/mission-file-manager.js"></script>
-
-<!-- 7. POLYGON MANAGER (Depends on tmap) -->
-<!-- 7. POLYGON MANAGER (Depends on tmap) -->
-<script src="plan-flight-modules/polygon-manager.js"></script>
-
-<!-- 8. PLAN FLIGHT MODULES (Depend on WaypointManager and MissionFile) -->
-<script src="plan-flight-modules/plan-flight-core.js"></script>
-<script src="plan-flight-modules/plan-flight-ui.js"></script>
-<script src="plan-flight-modules/plan-flight-file.js"></script>
-<script src="plan-flight-modules/plan-flight-takeoff.js"></script>
-<script src="plan-flight-modules/plan-flight-waypoint.js"></script>
-<script src="plan-flight-modules/plan-flight-polygon.js"></script>
-<script src="plan-flight-modules/polygon-backend-integration.js"></script>
-<!-- DELETE THIS LINE: <script src="plan-flight-modules/polygon-manager.js"></script> -->
-<script src="plan-flight-modules/plan-flight-return.js"></script>
-<script src="plan-flight-modules/plan-flight-center.js"></script>
-<script src="plan-flight-modules/plan-flight-weather.js"></script>
-<script src="plan-flight-modules/plan-flight-menu-router.js"></script>
-<script src="plan-flight-modules/websocket.js"></script>
-<script src="waypoint-polygon-bridge.js"></script>
-<script src="survey-settings.js"></script>
-<!-- 9. MAIN APPLICATION (Must be last - initializes everything) -->
-<script src="app.js"></script>
-<script src="settings-window.js"></script>
-<script src="calib-accel.js"></script>
-<script src="calib-compass.js"></script>
-<script src="calib-radio.js"></script>
-<script src="calib-esc.js"></script>
-<script src="param-user.js"></script>
-<script src="param-full.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Custom Scripts -->
+    <script src="tmap.js"></script>
+    <script src="compass.js"></script>
+    <script src="video-stream.js"></script>
+    <script src="flight-controls.js"></script>
+    <script src="messaage-console.js"></script>
+    <script src="weather-dashboard.js"></script>
+    <script src="analyze-tools.js"></script>
+    <script src="dropdown-menu.js"></script>
+    
+    <!-- IMPORTANT: Load command-editor.js BEFORE plan-flight.js -->
+    <script src="command-editor.js"></script>
+    <script src="plan-flight.js"></script>
+    
+    <script src="app.js"></script>
 </body>
 </html>
