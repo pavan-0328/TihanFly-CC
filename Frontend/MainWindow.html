@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TiHANFly - Professional Drone GCS</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="flight-controls.css">
+    <link rel="stylesheet" href="message-console.css">
+    <link rel="stylesheet" href="weather-dashboard.css">
+    <link rel="stylesheet" href="dropdown-menu.css">
+    <link rel="stylesheet" href="plan-flight.css">
+    <link rel="stylesheet" href="command-editor.css">
+    <link rel="stylesheet" href="flight-controls-mode.css">
+    <link rel="stylesheet" href="waypoint-context-menu.css">
+    <link rel="stylesheet" href="settings-window.css">
+<!-- Settings panels: one CSS per panel -->
+<link rel="stylesheet" href="calib-accel.css">
+<link rel="stylesheet" href="calib-compass.css">
+<link rel="stylesheet" href="calib-radio.css">
+<link rel="stylesheet" href="calib-esc.css">
+<link rel="stylesheet" href="param-user.css">
+<link rel="stylesheet" href="param-full.css">
+
+</head>
+<body>
+    <!-- Main Container with Grid Layout -->
+    <div class="main-container">
+        
+        <!-- Header Bar - Professional GCS Style -->
+        <div class="header-bar">
+            <!-- Left Section: Logo + Status -->
+            <div class="header-left">
+                <img src="resources/icon/tihan.png" 
+                     class="header-logo" 
+                     alt="TiHAN Logo"
+                     id="tihanLogo">
+                <span class="status-badge ready">Ready To Fly</span>
+            </div>
+            
+            <!-- Center Section: System Indicators -->
+            <div class="header-center">
+                <!-- Hold Mode Indicator -->
+                <div class="indicator-item">
+                    <img src="resources/Gears.svg" class="indicator-icon" alt="Hold">
+                    <span class="indicator-text">Hold</span>
+                </div>
+                
+                <!-- Signal/RC Indicator -->
+                <div class="indicator-item">
+                    <img src="resources/Megaphone.svg" class="indicator-icon" alt="Signal">
+                    <span class="indicator-text">10</span>
+                    <span class="indicator-subtext">0.7</span>
+                </div>
+                
+                <!-- GPS Indicator -->
+                <div class="indicator-item">
+                    <img src="resources/Gps.svg" class="indicator-icon" alt="GPS">
+                </div>
+                
+                <!-- Battery Indicator -->
+                <div class="indicator-item battery-indicator">
+                    <img src="resources/BatteryGreen.svg" class="indicator-icon" alt="Battery">
+                    <span class="indicator-text">100%</span>
+                </div>
+            </div>
+            
+            <!-- Right Section: DX4 Logo -->
+            <div class="header-right">
+                <img src="resources/icon/tihanlogo.png" 
+                     class="dx4-logo" 
+                     alt="DX4 Logo">
+            </div>
+        </div>
+
+        <!-- Content Area: Map + Video -->
+        <div class="content-area">
+            <!-- Map Container -->
+            <div id="map"></div>
+
+            <!-- Video Container -->
+            <div id="videoContainer">
+                <!-- Video Stream Element -->
+                <div id="videoStream"></div>
+                
+                <!-- Video Overlay Controls -->
+                <div class="video-overlay">
+                    <div class="video-status no-signal">
+                        <div class="status-dot"></div>
+                        <span>NO SIGNAL</span>
+                    </div>
+                </div>
+                
+                <!-- Maximize/Minimize Button -->
+                <button id="videoMaxBtn" title="Toggle Video Fullscreen">⛶</button>
+            </div>
+        </div>
+
+        <!-- COMPASS - FIXED POSITION LIKE HEADER (Outside map/video containers) -->
+        <div id="compassContainer"></div>
+
+        <!-- FLIGHT CONTROL BUTTONS STRIP - TOP LEFT CORNER BELOW HEADER -->
+<div class="flight-controls-strip" id="flightControlsStrip">
+
+    <button id="takeoffBtn" class="flight-btn takeoff-btn" title="Takeoff">
+        <img src="resources/takeoff.svg" alt="Takeoff" class="btn-icon">
+        <span class="btn-label">TAKEOFF</span>
+    </button>
+
+    <button id="landBtn" class="flight-btn land-btn" title="Land">
+        <img src="resources/land.svg" alt="Land" class="btn-icon">
+        <span class="btn-label">LAND</span>
+    </button>
+
+    <button id="rtlBtn" class="flight-btn rtl-btn" title="Return to Launch">
+        <img src="resources/rtl.svg" alt="RTL" class="btn-icon">
+        <span class="btn-label">RTL</span>
+    </button>
+
+    <!-- Flight Modes Dropdown -->
+    <div class="flight-mode-dropdown-wrapper">
+        <button id="flightModeBtn" class="flight-btn flight-mode-btn" title="Flight Modes">
+            <svg class="btn-icon mode-svg-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="btn-label">MODE</span>
+        </button>
+
+        <div class="flight-mode-panel" id="flightModePanel">
+            <div class="flight-mode-panel-header">
+                <span>Select Flight Mode</span>
+                <div class="active-mode-badge" id="activeModeDisplay">STABILIZE</div>
+            </div>
+            <div class="flight-mode-list">
+                <button class="mode-item active-mode" data-mode="Stabilize"><span class="mode-dot"></span><span class="mode-name">Stabilize</span><span class="mode-tag basic">BASIC</span></button>
+                <button class="mode-item" data-mode="Acro"><span class="mode-dot"></span><span class="mode-name">Acro</span><span class="mode-tag expert">EXPERT</span></button>
+                <button class="mode-item" data-mode="Altitude Hold"><span class="mode-dot"></span><span class="mode-name">Altitude Hold</span><span class="mode-tag basic">BASIC</span></button>
+                <button class="mode-item" data-mode="Auto"><span class="mode-dot"></span><span class="mode-name">Auto</span><span class="mode-tag auto">AUTO</span></button>
+                <button class="mode-item" data-mode="Guided"><span class="mode-dot"></span><span class="mode-name">Guided</span><span class="mode-tag auto">AUTO</span></button>
+                <button class="mode-item" data-mode="Loiter"><span class="mode-dot"></span><span class="mode-name">Loiter</span><span class="mode-tag gps">GPS</span></button>
+                <button class="mode-item" data-mode="RTL"><span class="mode-dot"></span><span class="mode-name">RTL</span><span class="mode-tag gps">GPS</span></button>
+                <button class="mode-item" data-mode="Circle"><span class="mode-dot"></span><span class="mode-name">Circle</span><span class="mode-tag gps">GPS</span></button>
+                <button class="mode-item" data-mode="Land"><span class="mode-dot"></span><span class="mode-name">Land</span><span class="mode-tag basic">BASIC</span></button>
+                <button class="mode-item" data-mode="Smart RTL"><span class="mode-dot"></span><span class="mode-name">Smart RTL</span><span class="mode-tag gps">GPS</span></button>
+                <button class="mode-item" data-mode="Drift"><span class="mode-dot"></span><span class="mode-name">Drift</span><span class="mode-tag expert">EXPERT</span></button>
+                <button class="mode-item" data-mode="Sport"><span class="mode-dot"></span><span class="mode-name">Sport</span><span class="mode-tag expert">EXPERT</span></button>
+                <button class="mode-item" data-mode="Position"><span class="mode-dot"></span><span class="mode-name">Position</span><span class="mode-tag gps">GPS</span></button>
+                <button class="mode-item" data-mode="Follow Me"><span class="mode-dot"></span><span class="mode-name">Follow Me</span><span class="mode-tag gps">GPS</span></button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+        <!-- DROPDOWN MENU STRIP - TOP LEFT BELOW FLIGHT CONTROLS -->
+        <div class="dropdown-menu-strip" id="dropdownMenuStrip">
+            <button id="planFlightBtn" class="dropdown-menu-btn" title="Plan Flight" data-action="plan-flight">
+                <img src="resources/flightplan.png" alt="Plan Flight" class="dropdown-btn-icon">
+                <span class="dropdown-btn-label">PLAN</span>
+            </button>
+            
+            <button id="analyzeBtn" class="dropdown-menu-btn" title="Analyze Tools" data-action="analyze-tools">
+                <img src="resources/analayze.png" alt="Analyze" class="dropdown-btn-icon">
+                <span class="dropdown-btn-label">ANALYZE</span>
+            </button>
+            
+            <button id="vehicleConfigBtn" class="dropdown-menu-btn" title="Vehicle Configuration" data-action="vehicle-config">
+                <img src="resources/vechile.png" alt="Config" class="dropdown-btn-icon">
+                <span class="dropdown-btn-label">CONFIG</span>
+            </button>
+            
+            <button id="appSettingsBtn" class="dropdown-menu-btn" title="Application Settings" data-action="app-settings">
+                <img src="resources/BatteryGreen.svg" alt="Settings" class="dropdown-btn-icon">
+                <span class="dropdown-btn-label">SETTINGS</span>
+            </button>
+        </div>
+
+        <!-- ========================================================================
+             PLAN FLIGHT MENU STRIP - ADDED HERE (HIDDEN BY DEFAULT)
+             ======================================================================== -->
+        <div id="planFlightMenuStrip" class="plan-flight-menu-strip" style="display: none;">
+            
+            <!-- FILE BUTTON -->
+            <div class="plan-menu-dropdown">
+                <button class="plan-menu-btn" title="File">
+                    <img src="resources/flightplan.png" alt="File" class="plan-menu-icon">
+                    <span class="plan-menu-label">FILE</span>
+                </button>
+                <div class="plan-menu-content">
+                    <a href="#" data-action="new-mission">New Mission</a>
+                    <a href="#" data-action="open-mission">Open Mission</a>
+                    <a href="#" data-action="save-mission">Save Mission</a>
+                    <a href="#" data-action="write-to-drone" style="border-top: 2px solid rgba(230, 0, 126, 0.2); margin-top: 4px; padding-top: 12px;">📡 Write to Drone</a>                    
+                </div>
+            </div>
+            
+            <!-- TAKEOFF BUTTON -->
+            <div class="plan-menu-dropdown">
+                <button class="plan-menu-btn" title="Takeoff">
+                    <img src="resources/takeoff.svg" alt="Takeoff" class="plan-menu-icon">
+                    <span class="plan-menu-label">TAKEOFF</span>
+                </button>
+                <div class="plan-menu-content">
+                    <a href="#" data-action="takeoff-here">Takeoff Here</a>
+                    <a href="#" data-action="set-home-position">Set Home Position</a>
+                    <a href="#" data-action="clear-home">Clear Home</a>
+                </div>
+            </div>
+            
+            <!-- WAYPOINT BUTTON -->
+            <div class="plan-menu-dropdown">
+                <button class="plan-menu-btn" title="Waypoint">
+                    <img src="resources/Gps.svg" alt="Waypoint" class="plan-menu-icon">
+                    <span class="plan-menu-label">WAYPOINT</span>
+                </button>
+                <div class="plan-menu-content">
+                    <a href="#" data-action="add-waypoint">Add Waypoint</a>
+                    <div class="plan-menu-divider"></div>
+                    <div class="plan-menu-item">
+                   <a href="#" data-action="send-markers">
+                   <span class="menu-icon">📡</span>
+                    Send Markers
+                    </a>
+                    </div>
+                    <a href="#" data-action="delete-waypoint">Delete Waypoint</a>
+                    <a href="#" data-action="clear-all">Clear All</a>
+                </div>
+            </div>
+            
+            <!-- POLYGON BUTTON -->
+            <div class="plan-menu-dropdown">
+                <button class="plan-menu-btn" title="Polygon">
+                    <img src="resources/polygon.png" alt="Polygon" class="plan-menu-icon">
+                    <span class="plan-menu-label">POLYGON</span>
+                </button>
+                <div class="plan-menu-content">
+                    <a href="#" data-action="draw-polygon">Draw Polygon</a>
+                    <a href="#" data-action="edit-polygon">Edit Polygon</a>
+                    <a href="#" data-action="survey-settings">Survey Settings</a>
+                    <div class="plan-menu-divider"></div>
+        <div class="plan-menu-item">
+            <a href="#" data-action="send-to-drone">
+                <span class="menu-icon">📡</span>
+                Send to Drone
+            </a>
+        </div>
+                    <a href="#" data-action="clear-polygon">Clear Polygon</a>
+                </div>
+            </div>
+            
+            <!-- RETURN BUTTON -->
+            <div class="plan-menu-dropdown">
+                <button class="plan-menu-btn" title="Return">
+                    <img src="resources/rtl.svg" alt="Return" class="plan-menu-icon">
+                    <span class="plan-menu-label">RETURN</span>
+                </button>
+                <div class="plan-menu-content">
+                    <a href="#" data-action="return-to-launch">Return to Launch</a>
+                    <a href="#" data-action="land-here">Land Here</a>
+                </div>
+            </div>
+            
+            <!-- CENTER BUTTON -->
+            <div class="plan-menu-dropdown">
+                <button class="plan-menu-btn" title="Center">
+                    <img src="resources/analayze.png" alt="Center" class="plan-menu-icon">
+                    <span class="plan-menu-label">CENTER</span>
+                </button>
+                <div class="plan-menu-content">
+                    <a href="#" data-action="center-mission">Center Mission</a>
+                    <a href="#" data-action="center-vehicle">Center Vehicle</a>
+                    <a href="#" data-action="center-home">Center Home</a>
+                </div>
+            </div>
+            
+        </div>
+        <!-- ======================================================================== -->
+
+        <!-- ========================================================================
+     COMMAND EDITOR PANEL - ADDED HERE (HIDDEN BY DEFAULT)
+     ======================================================================== -->
+<!-- Command Editor Panel - Complete with Fence & Rally -->
+<div id="commandEditorPanel" class="command-editor-panel" style="display: none;">
+    
+    <!-- Editor Header -->
+    <div class="editor-header">
+        <div class="editor-title">
+            <svg class="editor-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 3L4 7L8 11M16 13L20 17L16 21M12 3L8 21" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            <span>Command Editor</span>
+        </div>
+    </div>
+    
+    <!-- Editor Tabs -->
+    <div class="editor-tabs">
+        <button class="editor-tab" data-tab="waypoints">Waypoints</button>
+    </div>
+    
+    <!-- Editor Content -->
+    <div class="editor-content">
+        
+   
+        
+        <!-- Waypoints Panel -->
+        <div class="tab-panel" id="waypointsPanel">
+            <div class="waypoint-list-header">
+                <div class="waypoint-count">
+                    <span id="waypointCountDisplay">0 Waypoints</span>
+                </div>
+                <button class="refresh-waypoints-btn" id="refreshWaypointsBtn" title="Refresh Waypoint List">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 10C21 10 18.995 7.26822 17.3662 5.63824C15.7373 4.00827 13.4864 3 11 3C6.02944 3 2 7.02944 2 12C2 16.9706 6.02944 21 11 21C15.1031 21 18.5649 18.2543 19.6482 14.5M21 10V4M21 10H15" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="empty-state" id="emptyWaypointState">
+                <div class="empty-icon">📍</div>
+                <p>No waypoints added yet</p>
+                <small>Click "Add Waypoint" to start</small>
+            </div>
+            
+            <div class="waypoint-list" id="waypointList" style="display: none;"></div>
+        </div>
+        
+        <!-- Waypoint Details Panel -->
+        <div class="waypoint-details-panel" id="waypointDetailsPanel" style="display: none;">
+            <div class="details-header">
+                <button class="back-to-list-btn" id="backToListBtn">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    Back to List
+                </button>
+            </div>
+            
+            <div class="details-title">
+                <span id="editingWaypointTitle">Waypoint 1</span>
+            </div>
+            
+            <div class="form-group">
+                <label>Waypoint ID</label>
+                <input type="text" class="form-control" id="waypointIdField" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label>Latitude</label>
+                <input type="number" class="form-control" id="waypointLatField" step="0.000001">
+            </div>
+            
+            <div class="form-group">
+                <label>Longitude</label>
+                <input type="number" class="form-control" id="waypointLngField" step="0.000001">
+            </div>
+            
+            <div class="form-group">
+                <label>Altitude (meters)</label>
+                <input type="number" class="form-control" id="waypointAltField" step="0.1">
+            </div>
+            
+            <div class="form-group">
+                <label>Type</label>
+                <select class="form-control" id="waypointTypeField">
+                    <!-- Navigation Commands -->
+                    <option value="waypoint">Waypoint</option>
+                    <option value="spline-waypoint">Spline Waypoint</option>
+                    <option value="loiter">Loiter</option>
+                    <option value="loiter-turns">Loiter (turns)</option>
+                    <option value="loiter-time">Loiter (time)</option>
+                    <option value="loiter-altitude">Loiter (altitude)</option>
+                    
+                    <!-- Launch & Landing -->
+                    <option value="home">Home/Takeoff</option>
+                    <option value="takeoff">Takeoff</option>
+                    <option value="land">Land</option>
+                    <option value="land-start">Land Start</option>
+                    <option value="rtl">Return To Launch</option>
+                    
+                    <!-- Altitude -->
+                    <option value="change-altitude">Change Altitude</option>
+                    
+                    <!-- Control Commands -->
+                    <option value="guided-enable">Guided Enable</option>
+                    <option value="set-flight-mode">Set Flight Mode</option>
+                    <option value="jump-to-item">Jump to Item</option>
+                    <option value="change-speed">Change Speed</option>
+                    <option value="set-launch-location">Set Launch Location</option>
+                    
+                    <!-- Delays & Timing -->
+                    <option value="delay-until">Delay Until</option>
+                    <option value="delay">Delay</option>
+                    <option value="wait-for-distance">Wait for Distance</option>
+                    <option value="wait-for-yaw">Wait for Yaw</option>
+                    
+                    <!-- Relay & Servo -->
+                    <option value="set-relay">Set Relay</option>
+                    <option value="cycle-relay">Cycle Relay</option>
+                    <option value="set-servo">Set Servo</option>
+                    <option value="cycle-servo">Cycle Servo</option>
+                    
+                    <!-- Camera Commands -->
+                    <option value="region-of-interest">Region of Interest</option>
+                    <option value="camera-config">Camera Config</option>
+                    <option value="camera-control">Camera Control</option>
+                    <option value="camera-trigger-distance">Camera Trigger Distance</option>
+                    
+                    <!-- Mount & Gimbal -->
+                    <option value="control-mount">Control Mount</option>
+                    <option value="gimbal-manager-pitchyaw">Gimbal Manager PitchYaw</option>
+                    <option value="gripper-mechanism">Gripper Mechanism</option>
+                    
+                    <!-- Safety & Limits -->
+                    <option value="enable-geofence">Enable Geofence</option>
+                    <option value="trigger-parachute">Trigger Parachute</option>
+                    <option value="inverted-flight">Inverted Flight</option>
+                    <option value="guided-limits">Guided Limits</option>
+                    
+                    <!-- Advanced -->
+                    <option value="autotune-enable">AutoTune Enable</option>
+                </select>
+            </div>
+            
+            <div class="details-actions">
+                <button class="btn-save" id="saveWaypointBtn">Save Changes</button>
+                <button class="btn-delete" id="deleteWaypointBtn">Delete Waypoint</button>
+            </div>
+        </div>
+        
+        <!-- Fence Panel -->
+        <div class="tab-panel" id="fencePanel">
+            <div class="fence-list-section">
+                <div class="waypoint-list-header">
+                    <div class="waypoint-count">
+                        <span id="fenceCountDisplay">0 Fences</span>
+                    </div>
+                    <button class="refresh-waypoints-btn" id="refreshFenceBtn" title="Refresh Fence List">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21 10C21 10 18.995 7.26822 17.3662 5.63824C15.7373 4.00827 13.4864 3 11 3C6.02944 3 2 7.02944 2 12C2 16.9706 6.02944 21 11 21C15.1031 21 18.5649 18.2543 19.6482 14.5M21 10V4M21 10H15" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="empty-state" id="emptyFenceState">
+                    <div class="empty-icon">🚧</div>
+                    <p>No geofences created yet</p>
+                    <small>Use POLYGON menu to draw fences</small>
+                </div>
+                
+                <div class="fence-list" id="fenceList" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <!-- Fence Details Panel -->
+        <div class="fence-details-panel" id="fenceDetailsPanel" style="display: none;">
+            <div class="details-header">
+                <button class="back-to-list-btn" id="backToFenceListBtn">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    Back to List
+                </button>
+            </div>
+            
+            <div class="details-title">
+                <span id="editingFenceTitle">Fence 1</span>
+            </div>
+            
+            <div class="form-group">
+                <label>Fence ID</label>
+                <input type="text" class="form-control" id="fenceIdField" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label>Fence Type</label>
+                <select class="form-control" id="fenceTypeField">
+                    <option value="inclusion">Inclusion</option>
+                    <option value="exclusion">Exclusion</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Points</label>
+                <input type="number" class="form-control" id="fencePointCountField" readonly>
+            </div>
+            
+            <div class="details-actions">
+                <button class="btn-save" id="saveFenceBtn">Save Changes</button>
+                <button class="btn-delete" id="deleteFenceBtn">Delete Fence</button>
+            </div>
+        </div>
+        
+        <!-- Rally Panel -->
+        <div class="tab-panel" id="rallyPanel">
+            <div class="rally-list-section">
+                <div class="waypoint-list-header">
+                    <div class="waypoint-count">
+                        <span id="rallyCountDisplay">0 Rally Points</span>
+                    </div>
+                    <button class="refresh-waypoints-btn" id="refreshRallyBtn" title="Refresh Rally List">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21 10C21 10 18.995 7.26822 17.3662 5.63824C15.7373 4.00827 13.4864 3 11 3C6.02944 3 2 7.02944 2 12C2 16.9706 6.02944 21 11 21C15.1031 21 18.5649 18.2543 19.6482 14.5M21 10V4M21 10H15" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="empty-state" id="emptyRallyState">
+                    <div class="empty-icon">📍</div>
+                    <p>No rally points set</p>
+                    <small>Click map to add rally points</small>
+                </div>
+                
+                <div class="rally-list" id="rallyList" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <!-- Rally Details Panel -->
+        <div class="rally-details-panel" id="rallyDetailsPanel" style="display: none;">
+            <div class="details-header">
+                <button class="back-to-list-btn" id="backToRallyListBtn">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    Back to List
+                </button>
+            </div>
+            
+            <div class="details-title">
+                <span id="editingRallyTitle">Rally Point 1</span>
+            </div>
+            
+            <div class="form-group">
+                <label>Rally Point ID</label>
+                <input type="text" class="form-control" id="rallyIdField" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label>Latitude</label>
+                <input type="number" class="form-control" id="rallyLatField" step="0.000001">
+            </div>
+            
+            <div class="form-group">
+                <label>Longitude</label>
+                <input type="number" class="form-control" id="rallyLngField" step="0.000001">
+            </div>
+            
+            <div class="form-group">
+                <label>Altitude (meters)</label>
+                <input type="number" class="form-control" id="rallyAltField" step="0.1">
+            </div>
+            
+            <div class="details-actions">
+                <button class="btn-save" id="saveRallyBtn">Save Changes</button>
+                <button class="btn-delete" id="deleteRallyBtn">Delete Rally Point</button>
+            </div>
+        </div>
+        
+    </div>
+    
+</div>
+
+<!-- ======================================================================== -->
+        <!-- ======================================================================== -->
+
+        <!-- MINIMAL MESSAGE CONSOLE - BOTTOM LEFT CORNER, FULLY TRANSPARENT -->
+        <div class="minimal-console-container">
+            <div class="minimal-console-messages" id="minimalConsoleMessages">
+                <!-- Messages will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <!-- WEATHER DASHBOARD - TOP RIGHT CORNER BELOW HEADER -->
+        <div class="weather-dashboard" id="weatherDashboard">
+            <!-- Weather Dashboard Header -->
+            <div class="weather-header">
+                <div class="weather-title">
+                    <svg class="weather-icon-title" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C12 2 9.5 5 9.5 9C9.5 10.933 10.567 12 12 12C13.433 12 14.5 10.933 14.5 9C14.5 5 12 2 12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 12V22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M8 16H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M9 19H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>Weather</span>
+                </div>
+                <button class="weather-close-btn" id="weatherCloseBtn" title="Close Weather Dashboard">×</button>
+            </div>
+
+            <!-- Weather Loading State -->
+            <div class="weather-loading" id="weatherLoading">
+                <div class="loading-spinner"></div>
+                <p>Loading weather data...</p>
+            </div>
+
+            <!-- Weather Error State -->
+            <div class="weather-error" id="weatherError" style="display: none;">
+                <svg class="error-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 8V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <circle cx="12" cy="16" r="1" fill="currentColor"/>
+                </svg>
+                <p id="weatherErrorMessage">Failed to load weather data</p>
+                <button class="retry-btn" id="weatherRetryBtn">Retry</button>
+            </div>
+
+            <!-- Weather Content -->
+            <div class="weather-content" id="weatherContent" style="display: none;">
+                <!-- Location Info -->
+                <div class="weather-location">
+                    <svg class="location-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="12" cy="9" r="2.5" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    <div class="location-text">
+                        <span class="location-name" id="locationName">--</span>
+                        <span class="location-coords" id="locationCoords">--, --</span>
+                    </div>
+                </div>
+
+                <!-- Main Weather Display -->
+                <div class="weather-main">
+                    <div class="weather-icon-container">
+                        <img src="" alt="Weather" class="weather-main-icon" id="weatherMainIcon">
+                    </div>
+                    <div class="weather-temp-container">
+                        <div class="weather-temp" id="weatherTemp">--°C</div>
+                        <div class="weather-description" id="weatherDescription">--</div>
+                    </div>
+                </div>
+
+                <!-- Weather Details Grid -->
+                <div class="weather-details-grid">
+                    <div class="weather-detail-item">
+                        <svg class="detail-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C12 2 9 5.5 9 9C9 10.933 10.343 12 12 12C13.657 12 15 10.933 15 9C15 5.5 12 2 12 2Z" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        <div class="detail-content">
+                            <span class="detail-label">Feels Like</span>
+                            <span class="detail-value" id="feelsLike">--°C</span>
+                        </div>
+                    </div>
+
+                    <div class="weather-detail-item">
+                        <svg class="detail-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2V8M12 16V22M4.93 4.93L9.17 9.17M14.83 14.83L19.07 19.07M2 12H8M16 12H22M4.93 19.07L9.17 14.83M14.83 9.17L19.07 4.93" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <div class="detail-content">
+                            <span class="detail-label">Humidity</span>
+                            <span class="detail-value" id="humidity">--%</span>
+                        </div>
+                    </div>
+
+                    <div class="weather-detail-item">
+                        <svg class="detail-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9.59 4.59A2 2 0 1111 8H2M10.59 11.59A2 2 0 1012 15H2M6.59 15.59A2 2 0 118 19H2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <div class="detail-content">
+                            <span class="detail-label">Wind Speed</span>
+                            <span class="detail-value" id="windSpeed">-- m/s</span>
+                        </div>
+                    </div>
+
+                    <div class="weather-detail-item">
+                        <svg class="detail-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 3V5M12 19V21M5 12H3M21 12H19M6.34 6.34L4.93 4.93M19.07 19.07L17.66 17.66M6.34 17.66L4.93 19.07M19.07 4.93L17.66 6.34" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        <div class="detail-content">
+                            <span class="detail-label">Pressure</span>
+                            <span class="detail-value" id="pressure">-- hPa</span>
+                        </div>
+                    </div>
+
+                    <div class="weather-detail-item">
+                        <svg class="detail-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M22 12H18L15 21L9 3L6 12H2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <div class="detail-content">
+                            <span class="detail-label">Visibility</span>
+                            <span class="detail-value" id="visibility">-- km</span>
+                        </div>
+                    </div>
+
+                    <div class="weather-detail-item">
+                        <svg class="detail-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M3 15C3 15 5 13 9 13C13 13 15 15 19 15C21 15 21 14 21 14V6C21 6 19 8 15 8C11 8 9 6 5 6C3 6 3 7 3 7V15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <div class="detail-content">
+                            <span class="detail-label">Clouds</span>
+                            <span class="detail-value" id="clouds">--%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Last Updated -->
+                <div class="weather-footer">
+                    <span class="weather-update-time" id="weatherUpdateTime">Click map to load weather</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Takeoff Modal -->
+    <div id="takeoffModal" class="takeoff-modal">
+        <div class="takeoff-modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    🚁 Takeoff Configuration
+                </div>
+                <button class="modal-close" id="modalCloseBtn">×</button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="input-group">
+                    <label class="input-label">Target Altitude</label>
+                    <div class="input-wrapper">
+                        <input type="range" id="altitudeSlider" class="input-field" 
+                               min="5" max="50" step="1" value="10">
+                        <span class="input-value" id="altitudeValue">10 m</span>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">Climb Speed</label>
+                    <div class="input-wrapper">
+                        <input type="range" id="speedSlider" class="input-field" 
+                               min="0.5" max="5" step="0.1" value="2">
+                        <span class="input-value" id="speedValue">2.0 m/s</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-actions" id="modalActions">
+                <button class="modal-btn modal-btn-cancel" id="modalCancelBtn">Cancel</button>
+                <button class="modal-btn modal-btn-confirm" id="modalConfirmBtn">Confirm Takeoff</button>
+            </div>
+            
+            <div class="progress-section" id="progressSection">
+                <div class="progress-header">
+                    <span class="progress-title">Takeoff Progress</span>
+                    <span class="progress-percentage" id="progressPercentage">0%</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar-fill" id="progressBarFill"></div>
+                </div>
+                <div class="progress-status" id="progressStatus">Initiating takeoff...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================
+         JavaScript Files - ORDER IS CRITICAL!
+         Load command-editor.js BEFORE plan-flight.js
+         ======================================================================== -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- 2. CORE MAP (Must be before WaypointManager) -->
+<script src="js/tmap.js"></script>
+
+<!-- 3. UI COMPONENTS (Independent modules) -->
+<script src="compass.js"></script>
+<script src="video-stream.js"></script>
+<script src="flight-controls.js"></script>
+<script src="messaage-console.js"></script>
+<script src="weather-dashboard.js"></script>
+<script src="dropdown-menu.js"></script>
+<script src="data-persistence.js"></script>
+
+<!-- 4. WAYPOINT SYSTEM (Depends on tmap) -->
+<script src="waypoint-manager.js"></script>
+<script src="waypoint-context-menu.js"></script>
+
+<!-- 5. COMMAND EDITOR (Depends on WaypointManager) -->
+<script src="command-editor.js"></script>
+
+<!-- 6. MISSION FILE MANAGER (Depends on WaypointManager) -->
+<script src="plan-flight-modules/mission-file-manager.js"></script>
+
+<!-- 7. POLYGON MANAGER (Depends on tmap) -->
+<!-- 7. POLYGON MANAGER (Depends on tmap) -->
+<script src="plan-flight-modules/polygon-manager.js"></script>
+
+<!-- 8. PLAN FLIGHT MODULES (Depend on WaypointManager and MissionFile) -->
+<script src="plan-flight-modules/plan-flight-core.js"></script>
+<script src="plan-flight-modules/plan-flight-ui.js"></script>
+<script src="plan-flight-modules/plan-flight-file.js"></script>
+<script src="plan-flight-modules/plan-flight-takeoff.js"></script>
+<script src="plan-flight-modules/plan-flight-waypoint.js"></script>
+<script src="plan-flight-modules/plan-flight-polygon.js"></script>
+<script src="plan-flight-modules/polygon-backend-integration.js"></script>
+<!-- DELETE THIS LINE: <script src="plan-flight-modules/polygon-manager.js"></script> -->
+<script src="plan-flight-modules/plan-flight-return.js"></script>
+<script src="plan-flight-modules/plan-flight-center.js"></script>
+<script src="plan-flight-modules/plan-flight-weather.js"></script>
+<script src="plan-flight-modules/plan-flight-menu-router.js"></script>
+<script src="plan-flight-modules/websocket.js"></script>
+<script src="waypoint-polygon-bridge.js"></script>
+<script src="survey-settings.js"></script>
+<!-- 9. MAIN APPLICATION (Must be last - initializes everything) -->
+<script src="app.js"></script>
+<script src="settings-window.js"></script>
+<script src="calib-accel.js"></script>
+<script src="calib-compass.js"></script>
+<script src="calib-radio.js"></script>
+<script src="calib-esc.js"></script>
+<script src="param-user.js"></script>
+<script src="param-full.js"></script>
+</body>
+</html>
